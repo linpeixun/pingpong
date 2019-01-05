@@ -8,11 +8,15 @@ import (
 
 type Message struct {
 	*Header
-	Data []byte
+	ServiceId     string
+	ServiceMethod string
+	MetaInfo      map[string]string
+	Payload       []byte
+	MessageData   []byte
 }
 
 func NewMessage() *Message {
-	header := Header([1]byte{})
+	header := Header([12]byte{})
 	header[0] = magic
 
 	return &Message{Header: &header}
@@ -40,8 +44,8 @@ func Read(r io.Reader) (*Message, error) {
 
 	dataLen := int(l)
 
-	msg.Data = make([]byte, dataLen)
-	_, err = io.ReadFull(r, msg.Data[:])
+	msg.MessageData = make([]byte, dataLen)
+	_, err = io.ReadFull(r, msg.MessageData[:])
 	if err != nil {
 		return nil, err
 	}
@@ -50,18 +54,16 @@ func Read(r io.Reader) (*Message, error) {
 }
 
 func (m *Message) Encode() []byte {
-	totalL := 1 + 4 + len(m.Data)
+	totalL := 1 + 4 + len(m.MessageData)
 
 	retData := make([]byte, totalL)
 
 	copy(retData[:1], m.Header[:])
-	binary.BigEndian.PutUint32(retData[1:5], uint32(len(m.Data)))
-	copy(retData[5:totalL], m.Data)
+	binary.BigEndian.PutUint32(retData[1:5], uint32(len(m.MessageData)))
+	copy(retData[5:totalL], m.MessageData)
 	return retData
 }
 
 const (
 	magic byte = 0x08
 )
-
-type Header [1]byte
