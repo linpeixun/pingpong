@@ -7,7 +7,7 @@ const (
 	Error
 )
 
-func (h *Header) Error(m MessageStatusType) {
+func (h *Header) SetError(m MessageStatusType) {
 	h[2] = h[2] | (byte(m) << 6 >> 6)
 }
 

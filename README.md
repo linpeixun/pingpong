@@ -11,7 +11,7 @@ Message
 |-payload([]byte)
 ```
 ## 消息byte数组结构
-Header+(ServiceId长度-4位)+ServiceId+（ServiceMethod长度-4位)+ServiceMethod+(MetaInfo长度-4位)+MetaInfo+(payload长度-4位)+payload
+Header+(后续数据总长度-4位)+(ServiceId长度-4位)+ServiceId+（ServiceMethod长度-4位)+ServiceMethod+(MetaInfo长度-4位)+MetaInfo+(payload长度-4位)+payload
 
 ## HEADER 
 12位

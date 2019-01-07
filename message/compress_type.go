@@ -1,16 +1,11 @@
 package message
 
-type CompressType byte
+import "github.com/linpeixun/pingpong/compress"
 
-const (
-	No CompressType = iota
-	Gzip
-)
-
-func (h *Header) SetCompressType(c CompressType) {
+func (h *Header) SetCompressType(c compress.CompressType) {
 	h[2] = h[2] | ((0x1c >> 2 & byte(c)) << 2)
 }
 
-func (h *Header) CompressType() CompressType {
-	return CompressType((h[2] & 0x1c) >> 2)
+func (h *Header) CompressType() compress.CompressType {
+	return compress.CompressType((h[2] & 0x1c) >> 2)
 }
