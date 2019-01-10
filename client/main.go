@@ -23,7 +23,7 @@ func main() {
 		conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		content := strconv.Itoa(count)
 		fmt.Println("%d-%s", count, content)
-		m := message.NewMessage()
+		m := message.NewEmptyMessage()
 		m.Data = []byte(content)
 
 		_, err = conn.Write(m.Encode())

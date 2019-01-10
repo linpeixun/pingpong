@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/imroc/biu"
 	"github.com/linpeixun/pingpong/compress"
-	"github.com/linpeixun/pingpong/log"
 	"github.com/linpeixun/pingpong/util"
 	"io"
 )
@@ -26,13 +24,6 @@ type Message struct {
 	MessageData   []byte
 }
 
-func NewMessage() *Message {
-	header := Header([12]byte{})
-	header[0] = magic
-
-	return &Message{Header: &header}
-}
-
 var zeroHeader Header
 
 func (m *Message) Reset() {
@@ -46,16 +37,7 @@ func (m *Message) Reset() {
 func (m *Message) CheckMagic() bool {
 	return m.Header[0] == magic
 }
-func Read(r io.Reader) (*Message, error) {
-	msg := NewMessage()
 
-	err := msg.Decode(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg, nil
-}
 func (m *Message) Decode(r io.Reader) error {
 	_, err := io.ReadFull(r, m.Header[:1])
 
@@ -141,20 +123,14 @@ func (m *Message) decodeMetaInfo(index int) int {
 }
 func (m *Message) decodeServiceMethod(index int) int {
 	l := binary.BigEndian.Uint32(m.MessageData[index : index+4])
-	log.Info("decode,ServiceMethod length:", l)
 	m.ServiceMethod = util.SliceByteToString(m.MessageData[index+4 : index+4+int(l)])
-	//m.ServiceMethod = string(m.MessageData[index+4 : index+4+int(l)])
 
-	log.Info("decode,ServiceMethod byte:", biu.BytesToBinaryString([]byte(m.ServiceMethod)))
 	return index + 4 + int(l)
 }
 func (m *Message) decodeServiceId(index int) int {
 	l := int(binary.BigEndian.Uint32(m.MessageData[index : index+4]))
-	log.Info("decode,serviceId length:", l)
 
 	m.ServiceId = util.SliceByteToString(m.MessageData[index+4 : index+4+l])
-	//m.ServiceId = string(m.MessageData[index+4 : index+4+l])
-	log.Info("decode,serviceId byte:", biu.BytesToBinaryString([]byte(m.ServiceId)))
 	return index + 4 + l
 }
 func (m *Message) Encode() []byte {
@@ -223,26 +199,22 @@ func (m *Message) encodePayload() []byte {
 }
 func (m *Message) encodeServiceId() []byte {
 	serviceIdLen := len(m.ServiceId)
-	log.Info("encode,serviceId length:", serviceIdLen)
 	var buf bytes.Buffer
 	var lenData = make([]byte, 4)
 	binary.BigEndian.PutUint32(lenData, uint32(serviceIdLen))
 	buf.Write(lenData)
 	buf.Write(util.StringToSliceByte(m.ServiceId))
 
-	log.Info("encode,serviceId byte:", biu.BytesToBinaryString(buf.Bytes()))
 	return buf.Bytes()
 }
 func (m *Message) encodeServiceMehtod() []byte {
 	serviceMethodLen := len(m.ServiceMethod)
-	log.Info("encode,serviceMethodLen length:", serviceMethodLen)
 	var buf bytes.Buffer
 	var lenData = make([]byte, 4)
 
 	binary.BigEndian.PutUint32(lenData, uint32(serviceMethodLen))
 	buf.Write(lenData)
 	buf.Write(util.StringToSliceByte(m.ServiceMethod))
-	log.Info("encode,ServiceMethod byte:", biu.BytesToBinaryString(buf.Bytes()))
 
 	return buf.Bytes()
 }
