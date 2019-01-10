@@ -3,7 +3,6 @@ package message
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"github.com/imroc/biu"
 	"github.com/linpeixun/pingpong/compress"
@@ -50,24 +49,7 @@ func (m *Message) CheckMagic() bool {
 func Read(r io.Reader) (*Message, error) {
 	msg := NewMessage()
 
-	_, err := io.ReadFull(r, msg.Header[:])
-	if err != nil {
-		return nil, err
-	}
-
-	if !msg.CheckMagic() {
-		return nil, errors.New("error Magic")
-	}
-
-	lenData := make([]byte, 4)
-	_, err = io.ReadFull(r, lenData[:])
-
-	l := binary.BigEndian.Uint32(lenData)
-
-	dataLen := int(l)
-
-	msg.MessageData = make([]byte, dataLen)
-	_, err = io.ReadFull(r, msg.MessageData[:])
+	err := msg.Decode(r)
 	if err != nil {
 		return nil, err
 	}
@@ -160,18 +142,18 @@ func (m *Message) decodeMetaInfo(index int) int {
 func (m *Message) decodeServiceMethod(index int) int {
 	l := binary.BigEndian.Uint32(m.MessageData[index : index+4])
 	log.Info("decode,ServiceMethod length:", l)
-	//m.ServiceMethod = util.SliceByteToString(m.MessageData[index+4 : index+4+int(l)])
-	m.ServiceMethod = string(m.MessageData[index+4 : index+4+int(l)])
+	m.ServiceMethod = util.SliceByteToString(m.MessageData[index+4 : index+4+int(l)])
+	//m.ServiceMethod = string(m.MessageData[index+4 : index+4+int(l)])
 
 	log.Info("decode,ServiceMethod byte:", biu.BytesToBinaryString([]byte(m.ServiceMethod)))
 	return index + 4 + int(l)
 }
 func (m *Message) decodeServiceId(index int) int {
 	l := int(binary.BigEndian.Uint32(m.MessageData[index : index+4]))
-	log.Info("sdecode,erviceId length:", l)
+	log.Info("decode,serviceId length:", l)
 
-	//m.ServiceId = util.SliceByteToString(m.MessageData[index+4 : index+4+l])
-	m.ServiceId = string(m.MessageData[index+4 : index+4+l])
+	m.ServiceId = util.SliceByteToString(m.MessageData[index+4 : index+4+l])
+	//m.ServiceId = string(m.MessageData[index+4 : index+4+l])
 	log.Info("decode,serviceId byte:", biu.BytesToBinaryString([]byte(m.ServiceId)))
 	return index + 4 + l
 }
@@ -186,7 +168,7 @@ func (m *Message) Encode() []byte {
 	metaInfoDataLen := len(metaInfoData)
 	payloadDataLen := len(payloadData)
 
-	dataLen := (4 + serviceIdDataLen + 4 + serviceMehtodDataLen + 4 + metaInfoDataLen + 4 + payloadDataLen)
+	dataLen := (serviceIdDataLen + serviceMehtodDataLen + 4 + metaInfoDataLen + 4 + payloadDataLen)
 	messageLen := len(m.Header) + 4 + dataLen
 
 	retData := make([]byte, messageLen)
@@ -199,16 +181,11 @@ func (m *Message) Encode() []byte {
 	binary.BigEndian.PutUint32(retData[index:index+4], uint32(dataLen))
 	index += 4
 
-	// serviceId length
-	binary.BigEndian.PutUint32(retData[index:index+4], uint32(serviceIdDataLen))
-	index += 4
 	//serviceId
 	copy(retData[index:], serviceIdData)
 	index += serviceIdDataLen
 
-	//serviceMethod length
-	binary.BigEndian.PutUint32(retData[index:index+4], uint32(serviceMehtodDataLen))
-	index += 4
+	//serviceMethod
 	copy(retData[index:], serviceMehtodData)
 	index += serviceMehtodDataLen
 

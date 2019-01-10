@@ -28,14 +28,14 @@ func TestMessage_Encode(t *testing.T) {
 
 	encodeBytes := m.Encode()
 
-	m2 := GetPooledMsg()
-
 	var buf bytes.Buffer
 	buf.Write(encodeBytes)
 	fmt.Println(biu.BytesToBinaryString(encodeBytes))
 
-	m2.Decode(&buf)
-
+	m2, err := Read(&buf)
+	if err != nil {
+		t.Fatalf("decode error")
+	}
 	//m2.ServiceMethod = m.ServiceMethod
 	//m2.ServiceId = m.ServiceId
 
@@ -48,12 +48,10 @@ func TestMessage_Encode(t *testing.T) {
 		t.Errorf("payload error")
 	}
 
-	//TODO 编码错误
 	if m.ServiceId != m2.ServiceId {
 		t.Errorf("ServiceId error,%v   %v", m.ServiceId, m2.ServiceId)
 	}
 
-	//TODO 编码错误
 	if m.ServiceMethod != m2.ServiceMethod {
 		t.Errorf("ServiceMethod error,%v   %v", m.ServiceMethod, m2.ServiceMethod)
 	}
