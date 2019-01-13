@@ -1,9 +1,11 @@
 package main
 
-import "github.com/linpeixun/pingpong"
+import (
+	"github.com/linpeixun/pingpong/server"
+)
 
 func main() {
-	s := pingpong.PingpongServer{}
+	s := server.PingpongServer{}
 	s.Server("127.0.0.1:8888")
 
 }

@@ -15,16 +15,16 @@ func main() {
 
 		return
 	}
-	conn.(*net.TCPConn).SetLinger(10)
+	conn.(*net.TCPConn).SetLinger(3)
 
-	for count := 1; count > 0; {
+	for count := 100; count > 0; {
 
 		conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
 		conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		content := strconv.Itoa(count)
 		fmt.Println("%d-%s", count, content)
 		m := message.NewEmptyMessage()
-		m.Data = []byte(content)
+		m.Payload = []byte(content)
 
 		_, err = conn.Write(m.Encode())
 		if err != nil {

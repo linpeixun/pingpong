@@ -1,4 +1,4 @@
-package pingpong
+package server
 
 import (
 	"bufio"
@@ -105,8 +105,9 @@ func (s *PingpongServer) connHandler(conn net.Conn) {
 			}
 			return
 		}
+		message.Ser
 
-		fmt.Println(string(message.Data))
+		fmt.Println(string(message.Payload))
 	}
 
 }
