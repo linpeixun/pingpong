@@ -97,7 +97,7 @@ func (s *PingpongServer) connHandler(conn net.Conn) {
 	reader := bufio.NewReaderSize(conn, ReaderBuffsize)
 
 	for {
-		message, err := message.Read(reader)
+		req, err := message.Read(reader)
 
 		if err != nil {
 			if !strings.Contains(err.Error(), "closed by the remote host") {
@@ -105,9 +105,12 @@ func (s *PingpongServer) connHandler(conn net.Conn) {
 			}
 			return
 		}
-		message.Ser
+		res := req.Clone()
+		res.Payload = res.Payload
+		conn.Write(res.Encode())
 
-		fmt.Println(string(message.Payload))
+		message.FreeMsg(req)
+		message.FreeMsg(req)
 	}
 
 }
