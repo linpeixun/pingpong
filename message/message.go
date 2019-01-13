@@ -239,3 +239,14 @@ func (m *Message) encodeMetaInfo() []byte {
 
 	return buf.Bytes()
 }
+
+func (m Message) Clone() *Message {
+	header := *m.Header
+
+	c := GetPooledMsg()
+	c.Header = &header
+	c.ServiceId = m.ServiceId
+	c.ServiceMethod = m.ServiceMethod
+
+	return c
+}
